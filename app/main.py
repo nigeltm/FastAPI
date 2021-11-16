@@ -1,7 +1,7 @@
 from fastapi import FastAPI,Response, status, HTTPException,Depends
-from fastapi.params import Body,Optional
 from pydantic import BaseModel
 from random import randrange
+from typing import Optional, List
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -46,13 +46,12 @@ async def root():
 
 # GET ALL POSTS
 @app.get("/posts")
-def get_posts(db:Session = Depends(get_db)):
+def get_posts(db:Session = Depends(get_db),response_model=List[schemas.Post]):
     posts = db.query(models.Post).all()
     # cursor.execute(""" SELECT * FROM posts""")
     # posts = cursor.fetchall()
-    return {
-        "data":posts
-    }
+    return posts
+    
 
 # @app.post("/posts")
 # def create_post(payload:dict=Body(...)):
@@ -63,7 +62,7 @@ def get_posts(db:Session = Depends(get_db)):
 #     }
 
 # CREATE A POST
-@app.post("/posts",status_code=status.HTTP_201_CREATED)
+@app.post("/posts",status_code=status.HTTP_201_CREATED,response_model=schemas.Post)
 def create_post(post:schemas.PostCreate,db: Session = Depends(get_db)):
 
     post = models.Post(**post.dict())
@@ -76,13 +75,12 @@ def create_post(post:schemas.PostCreate,db: Session = Depends(get_db)):
     # post=cursor.fetchone()
     # conn.commit()
 
-    return {
-        "data":post
-    }
+    return post
+    
 
 
 #  GET A POST
-@app.get("/posts/{id}")
+@app.get("/posts/{id}",response_model=schemas.Post)
 def get_post(id:int, db: Session = Depends(get_db)):
     post = db.query(models.Post).filter(models.Post.id==id).first()
     # cursor.execute(""" SELECT * FROM posts WHERE id = %s """, (str(id),))
@@ -90,9 +88,8 @@ def get_post(id:int, db: Session = Depends(get_db)):
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
         detail=f"post with id: {id} not found.")
-    return {
-        "data":post
-    }
+    return post
+    
 
 
 # DELETE A POST
@@ -110,7 +107,7 @@ def delete_post(id:int, db: Session = Depends(get_db)):
 
 
 # UPDATE A POST
-@app.put("/posts/{id}")
+@app.put("/posts/{id}",response_model=schemas.Post)
 def update_post(id:int,updated_post:schemas.PostCreate, db: Session = Depends(get_db)):
     # cursor.execute(""" UPDATE posts SET title=%s,content=%s,published=%s WHERE id=%s RETURNING *""",(post.title,post.content,post.published,str(id),))
     # post=cursor.fetchone()
@@ -121,4 +118,4 @@ def update_post(id:int,updated_post:schemas.PostCreate, db: Session = Depends(ge
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Post with id: {id} does not exist.")
     post_query.update(updated_post.dict(),synchronize_session=False)
     db.commit()
-    return {"data":post_query.first()}
+    return post_query.first()

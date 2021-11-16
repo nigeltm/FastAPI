@@ -1,11 +1,7 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 # SCHEMA/PYDANTIC MODEL - defines the structure of the request/response
-class Post(BaseModel):
-    title:str
-    content:str
-    published:bool=True
-
 class PostBase(BaseModel):
     title:str
     content:str
@@ -15,7 +11,10 @@ class PostBase(BaseModel):
 class PostCreate(PostBase):
     pass
 
-# Below class extends Postbase and allows user to only update the published field
-class PostUpdate(PostBase):
-    published:bool
+#Pydantic model for the response, explicitly defines fileds to be send back to the user
+class Post(PostBase):
+    id:int
+    created_at:datetime
 
+    class Config:
+        orm_mode = True
