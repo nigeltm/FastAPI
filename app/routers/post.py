@@ -12,11 +12,17 @@ router = APIRouter(
 
 # GET ALL POSTS
 @router.get("/")
-def get_posts(db:Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user),response_model=List[schemas.Post]):
-    posts = db.query(models.Post).all()
+def get_posts(db:Session = Depends(get_db),
+current_user: int = Depends(oauth2.get_current_user),
+response_model=List[schemas.Post],
+limit:int = 10
+):
+    posts = db.query(models.Post).limit(limit).all()
     # posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
     # cursor.execute(""" SELECT * FROM posts""")
     # posts = cursor.fetchall()
+    # 
+    print(limit)
     return posts
     
 
