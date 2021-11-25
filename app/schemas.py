@@ -2,6 +2,8 @@ from pydantic import BaseModel,EmailStr
 from datetime import datetime
 from typing import Optional
 
+from pydantic.types import conint
+
 # SCHEMA/PYDANTIC MODEL - defines the structure of the request/response
 class PostBase(BaseModel):
     title:str
@@ -48,3 +50,7 @@ class Token(BaseModel):
 # SCHEMA FOR TOKEN DATA
 class TokenData(BaseModel):
     id: Optional[str] =  None
+
+class Vote(BaseModel):
+    post_id:int
+    dir:conint(le=1)
